@@ -1,0 +1,160 @@
+---
+title: "FML64060_ASSIGNMENT_1"
+author: "NIHARIKA MATSA"
+date: "2023-09-09"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Dataset reference
+
+I have downloaded the dataset from Kaggle which has both qualitative and quantitative data. Please find the dataset below -
+https://www.kaggle.com/datasets/pyatakov/india-agriculture-crop-production
+
+## using readxl package
+As our dataset is in excel format, we need to use the library called "readxl" so that we can load our dataset.
+```{r}
+library(readxl)
+library(knitr)
+```
+
+## Import the dataset
+```{r}
+agri_data <- read_excel("India Agriculture Crop Production.xlsx")
+agri_data_df <- data.frame(agri_data)
+```
+
+
+## Display the data
+```{r}
+### I just want to display all the columns in the dataset. Hence using options().
+options(tibble.width = Inf)
+
+### In order to display the data in a table format, I have used kable.
+kable(head(agri_data_df), format = "markdown")
+```
+
+## Summary of the data
+Summary displays the class and mode of each column if it is a qualitative data and it displays the min, max, mean, median, etc., if it is a quantitative data.
+```{r}
+summary(agri_data_df)
+```
+
+## Descriptive Statistics for the quantitative data from the dataset
+### Calculate Mean 
+Add all the values from column and divide it by total number of values.
+```{r}
+### I see that there are few missing values in the Area, Yield and Production column.
+colMeans(agri_data_df[,c('Area', 'Production','Yield')],na.rm = TRUE)
+```
+
+### Calculate Median
+To find the median, first arrange the values in the ascending order and then pick the middle number.
+a. If the total count is odd then we can have one median value (i.e., Middle number)
+b. If the total count is even then we will have two middle numbers, in order to find median for them, we have to calculate mean for those two numbers and the result will be our median.
+```{r}
+median(agri_data_df$Area, na.rm = TRUE)
+median(agri_data_df$Production, na.rm = TRUE)
+median(agri_data_df$Yield, na.rm = TRUE)
+```
+
+### Calculate Min value for Area, Production and Yield
+```{r}
+min(agri_data_df$Area, na.rm = TRUE)
+min(agri_data_df$Production, na.rm = TRUE)
+min(agri_data_df$Yield, na.rm = TRUE)
+```
+### Calculate Max value for Area, Production and Yield
+```{r}
+max(agri_data_df$Area, na.rm = TRUE)
+max(agri_data_df$Production, na.rm =TRUE)
+max(agri_data_df$Yield, na.rm = TRUE)
+```
+## Descriptive Statistics for the qualitative data from the dataset
+### Calculate Mode
+To find mode, first arrange the values in the ascending order and find the response which occurs most frequently. Dataset can have no mode, one mode or more than one mode.
+```{r}
+### Calculate the mode for State
+mode_result <- as.data.frame(sort(table(agri_data_df$State), decreasing = TRUE))
+
+### Rename columns for clarity
+colnames(mode_result) <- c("State", "Mode")
+
+### Display the result in table format
+kable(mode_result, format = "markdown")
+
+
+### Calculate the mode for Season
+season_result <- as.data.frame(sort(table(agri_data_df$Season), decreasing = TRUE))
+
+### Rename columns for clarity
+colnames(season_result) <- c("Season", "Mode")
+
+### Display the result in table format
+kable(season_result, format = "markdown")
+
+### Calculate the mode for Crop
+crop_result <- as.data.frame(sort(table(agri_data_df$Crop), decreasing = TRUE))
+
+### Rename columns for clarity
+colnames(crop_result) <- c("Crop", "Mode")
+
+### Display the result in table format
+kable(crop_result, format = "markdown")
+```
+## Transform atleast one variable
+```{r}
+### We need dplyr library to rename the column name
+library(dplyr)
+
+### Rename the columns
+agri_data_df <- agri_data_df %>%
+  rename(
+    Production_Units = Production.Units,
+    Area_Units = Area.Units
+  )
+
+### We are converting Hectares to Kilometers for Area_Units column
+agri_data_df <- agri_data_df %>%
+  mutate(
+    Area = Area/100
+  )
+
+### Displays the number of rows in the dataset
+nrow(agri_data_df)
+
+### Assigning the Area Units value as Kilometers as we have converted Hectare to Kilometers
+agri_data_df$Area_Units <- 'Kilometers'
+
+### Round off the values for Area, Production and Yield
+agri_data_df$Yield <- round(agri_data_df$Yield, digits=2)
+agri_data_df$Production <- round(agri_data_df$Production, digits=2)
+agri_data_df$Area <- round(agri_data_df$Area, digits=2)
+```
+### Scatter plot for Production and Yield
+```{r}
+#### Load the ggplot2 package
+library(ggplot2)
+# Create a scatter plot
+scatter_plot <- ggplot(agri_data_df, aes(x = Area, y = Yield)) +
+  geom_point()
+
+# Display the scatter plot
+print(scatter_plot)
+```
+
+### Bar Plot for Year and Yield
+```{r}
+# Create a bar plot
+colors <- c("red","green", "blue","purple", "orange")
+ggplot(agri_data_df, aes(x = Year, y = Yield, fill= Year)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Bar Plot for Year and Yield") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
